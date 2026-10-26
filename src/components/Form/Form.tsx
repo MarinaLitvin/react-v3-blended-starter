@@ -11,7 +11,8 @@ export default function Form({ onSubmit }: FormProps) {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const query = String(formData.get("search") ?? "").trim();
 
     if (!query) {
@@ -20,7 +21,7 @@ export default function Form({ onSubmit }: FormProps) {
     }
 
     onSubmit(query);
-    event.currentTarget.reset();
+    form.reset();
   };
 
   return (
