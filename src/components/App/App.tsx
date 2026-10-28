@@ -13,6 +13,14 @@ import Loader from "../../components/Loader/Loader";
 import Modal from "../../components/Modal/Modal";
 
 export default function App() {
+  // useEffect(() => {
+  //   const getResponse = async () => {
+  //     const response = await getPhotos("cat");
+  //     console.log(response);
+  //   };
+  //   getResponse();
+  // }, []);
+
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -56,7 +64,7 @@ export default function App() {
 
           {selectedPhoto && (
             <Modal onClose={() => setSelectedPhoto(null)}>
-              <img src={selectedPhoto.src.original} alt={selectedPhoto.alt} />
+              <img src={selectedPhoto.src.large} alt={selectedPhoto.alt} />
             </Modal>
           )}
         </Container>
