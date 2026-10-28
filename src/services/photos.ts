@@ -7,7 +7,7 @@ interface PhotosResponse {
 
 axios.defaults.baseURL = "https://api.pexels.com/v1/";
 axios.defaults.headers.common["Authorization"] =
-  import.meta.env.VITE_PIXELS_API_KEY;
+  import.meta.env.VITE_PEXELS_API_KEY;
 axios.defaults.params = {
   orientation: "landscape",
 };
