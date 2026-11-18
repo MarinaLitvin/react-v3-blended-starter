@@ -1,5 +1,7 @@
 import css from "./PostList.module.css";
 import type { Post } from "../../types/post";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deletePost } from "../../services/postService";
 
 interface PostListProps {
   posts: Post[];
@@ -8,6 +10,17 @@ interface PostListProps {
 }
 
 export default function PostList({ posts, toggleModal, toggleEditPost }: PostListProps) {
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: deletePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
+      alert("Post deleted successfully!");
+    },
+  });
+
   return (
     <ul className={css.list}>
       {posts.map((post) => (
@@ -24,7 +37,15 @@ export default function PostList({ posts, toggleModal, toggleEditPost }: PostLis
             >
               Edit
             </button>
-            <button className={css.delete}>Delete</button>
+            <button
+              className={css.delete}
+              type="button"
+              onClick={() => {
+                mutate(post.id);
+              }}
+            >
+              Delete
+            </button>
           </div>
         </li>
       ))}

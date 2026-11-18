@@ -1,6 +1,6 @@
 import * as Yup from "yup";
 import { Field, Form, Formik, ErrorMessage } from "formik";
-import type { FormikHelpers } from "formik";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { createPost } from "../../services/postService";
@@ -21,7 +21,7 @@ const initialValues: CreatePostValues = {
   body: "",
 };
 
-const validationSchema = Yup.object({
+const validationSchema = Yup.object().shape({
   title: Yup.string()
     .min(3, "Title must be at least 3 characters")
     .max(50, "Title must not exceed 50 characters")
@@ -34,26 +34,22 @@ const validationSchema = Yup.object({
 export default function PostForm({ onClose }: CreatePostFormProps) {
   const queryClient = useQueryClient();
 
-  const createPostMutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: createPost,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
+      queryClient.invalidateQueries({
         queryKey: ["posts"],
       });
 
       alert("Post created successfully!");
+
+      onClose();
     },
   });
 
-  const handleSubmit = async (
-    values: CreatePostValues,
-    actions: FormikHelpers<CreatePostValues>
-  ) => {
+  const handleSubmit = (values: CreatePostValues) => {
     try {
-      await createPostMutation.mutateAsync(values);
-
-      actions.resetForm();
-      onClose();
+      mutate(values);
     } catch (error) {
       console.error("Failed to create post:", error);
     }
@@ -65,35 +61,29 @@ export default function PostForm({ onClose }: CreatePostFormProps) {
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
     >
-      {({ isValid, dirty }) => (
-        <Form className={css.form}>
-          <div className={css.formGroup}>
-            <label htmlFor="title">Title</label>
-            <Field id="title" type="text" name="title" className={css.input} />
-            <ErrorMessage name="title" component="span" className={css.error} />
-          </div>
+      <Form className={css.form}>
+        <div className={css.formGroup}>
+          <label htmlFor="title">Title</label>
+          <Field id="title" type="text" name="title" className={css.input} />
+          <ErrorMessage name="title" component="span" className={css.error} />
+        </div>
 
-          <div className={css.formGroup}>
-            <label htmlFor="body">Content</label>
-            <Field id="body" as="textarea" name="body" rows={8} className={css.textarea} />
-            <ErrorMessage name="body" component="span" className={css.error} />
-          </div>
+        <div className={css.formGroup}>
+          <label htmlFor="body">Content</label>
+          <Field id="body" as="textarea" name="body" rows={8} className={css.textarea} />
+          <ErrorMessage name="body" component="span" className={css.error} />
+        </div>
 
-          <div className={css.actions}>
-            <button type="button" className={css.cancelButton} onClick={onClose}>
-              Cancel
-            </button>
+        <div className={css.actions}>
+          <button type="button" className={css.cancelButton} onClick={onClose}>
+            Cancel
+          </button>
 
-            <button
-              type="submit"
-              className={css.submitButton}
-              disabled={!isValid || !dirty || createPostMutation.isPending}
-            >
-              Create post
-            </button>
-          </div>
-        </Form>
-      )}
+          <button type="submit" className={css.submitButton} disabled={isPending}>
+            Create post
+          </button>
+        </div>
+      </Form>
     </Formik>
   );
 }
