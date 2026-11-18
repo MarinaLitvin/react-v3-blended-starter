@@ -48,11 +48,7 @@ export default function PostForm({ onClose }: CreatePostFormProps) {
   });
 
   const handleSubmit = (values: CreatePostValues) => {
-    try {
-      mutate(values);
-    } catch (error) {
-      console.error("Failed to create post:", error);
-    }
+    mutate(values);
   };
 
   return (

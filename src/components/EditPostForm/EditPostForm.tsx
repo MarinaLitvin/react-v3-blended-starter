@@ -9,13 +9,11 @@ import type { Post } from "../../types/post";
 import css from "./EditPostForm.module.css";
 
 interface EditPostFormProps {
-  post: Pick<Post, "id" | "title" | "body">;
+  initialValues: Post;
   onClose: () => void;
 }
 
-type EditPostValues = Pick<Post, "title" | "body">;
-
-const validationSchema = Yup.object({
+const validationSchema = Yup.object().shape({
   title: Yup.string()
     .min(3, "Title must be at least 3 characters")
     .max(50, "Title must not exceed 50 characters")
@@ -25,70 +23,54 @@ const validationSchema = Yup.object({
     .required("Content is required"),
 });
 
-export default function EditPostForm({ post, onClose }: EditPostFormProps) {
+export default function EditPostForm({ initialValues, onClose }: EditPostFormProps) {
   const queryClient = useQueryClient();
 
-  const editPostMutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: editPost,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
+    onSuccess: ({ title }) => {
+      queryClient.invalidateQueries({
         queryKey: ["posts"],
       });
 
-      alert("Post edited successfully!");
+      alert(`${title}Post edited successfully!`);
       onClose();
     },
   });
 
-  const handleSubmit = async (values: EditPostValues) => {
-    try {
-      await editPostMutation.mutateAsync({
-        id: post.id,
-        ...values,
-      });
-    } catch (error) {
-      console.error("Failed to edit post:", error);
-    }
+  const handleSubmit = (values: Post) => {
+    mutate(values);
   };
 
   return (
     <Formik
-      initialValues={{
-        title: post.title,
-        body: post.body,
-      }}
+      initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
       enableReinitialize
     >
-      {({ isValid, dirty }) => (
-        <Form className={css.form}>
-          <div className={css.formGroup}>
-            <label htmlFor="title">Title</label>
-            <Field id="title" type="text" name="title" className={css.input} />
-            <ErrorMessage name="title" component="span" className={css.error} />
-          </div>
+      <Form className={css.form}>
+        <div className={css.formGroup}>
+          <label htmlFor="title">Title</label>
+          <Field id="title" type="text" name="title" className={css.input} />
+          <ErrorMessage name="title" component="span" className={css.error} />
+        </div>
 
-          <div className={css.formGroup}>
-            <label htmlFor="body">Content</label>
-            <Field id="body" as="textarea" name="body" rows={8} className={css.textarea} />
-            <ErrorMessage name="body" component="span" className={css.error} />
-          </div>
+        <div className={css.formGroup}>
+          <label htmlFor="body">Content</label>
+          <Field id="body" as="textarea" name="body" rows={8} className={css.textarea} />
+          <ErrorMessage name="body" component="span" className={css.error} />
+        </div>
 
-          <div className={css.actions}>
-            <button type="button" className={css.cancelButton} onClick={onClose}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={css.submitButton}
-              disabled={!isValid || !dirty || editPostMutation.isPending}
-            >
-              Edit post
-            </button>
-          </div>
-        </Form>
-      )}
+        <div className={css.actions}>
+          <button type="button" className={css.cancelButton} onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className={css.submitButton} disabled={isPending}>
+            Edit post
+          </button>
+        </div>
+      </Form>
     </Formik>
   );
 }

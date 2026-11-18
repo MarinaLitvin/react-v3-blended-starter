@@ -93,7 +93,7 @@ export default function App() {
           {isCreatePost && <CreatePostForm onClose={handleCloseModal} />}
 
           {isEditPost && editedPost && (
-            <EditPostForm post={editedPost} onClose={handleCloseModal} />
+            <EditPostForm initialValues={editedPost} onClose={handleCloseModal} />
           )}
         </Modal>
       )}
